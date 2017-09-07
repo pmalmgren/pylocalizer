@@ -10,6 +10,8 @@ import shutil
 import sys
 from uuid import uuid4
 
+from googleapiclient import discovery
+
 import constants
 
 
@@ -41,8 +43,7 @@ class Translator(object):
 
     """
     def __init__(self):
-        # self.translate_service = discovery.build('translate', version='v2')
-        self.translate_service = None
+        self.translate_service = discovery.build('translate', version='v2')
 
     def translate(self, text, target_lang):
         req = self.translate_service.translations().list(q=text, target=target_lang, source='en')
@@ -247,20 +248,22 @@ class XcodeLocalizationProject(object):
             if lproj.language_code == language:
                 return lproj.get_keys()
 
-    def get(self, key, languages):
+    def get(self, key, languages=None):
         """Fetches the key from all the language projects"""
         for lproj in self.lprojs:
-            if lproj.language_code in languages:
-                yield {
-                    constants.KEY: key,
-                    constants.TEXT: lproj.get(key),
-                    constants.LANGUAGE: lproj.language_code,
-                    constants.FORMAT: constants.JSON
-                } 
+            if languages is not None and lproj.language_code not in languages:
+                pass
+
+            yield {
+                constants.KEY: key,
+                constants.TEXT: lproj.get(key),
+                constants.LANGUAGE: lproj.language_code,
+                constants.FORMAT: constants.JSON
+            } 
         
     def set(self, key, value):
         """Sets the key for all language projects"""
-        for lproj in self.language_projects:
+        for lproj in self.lprojs:
             try:
                 translated_line = lproj.set(key, value)
             except Exception as e:
@@ -288,7 +291,7 @@ def print_and_quit():
 
 def print_key(key, xcodeproject):
     """Fetches the key from all the language projects"""
-    print(json.dumps(xcodeproject.get(key), sort_keys=True, indent=4))
+    print(json.dumps(list(xcodeproject.get(key)), sort_keys=True, indent=4))
 
 
 def main():
