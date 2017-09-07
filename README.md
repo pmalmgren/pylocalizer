@@ -25,6 +25,7 @@ This command will get the key for all languages in an Xcode project:
     (pytranslate) $ python add_localized_string.py [path to Xcode project] --get MyKey 
 
 This command will translate the key for all languages in an Xcode project:
+
     (pytranslate) $ python add_localized_string.py [path to Xcode project] --set MyKey="My value"
     
 ## Future
