@@ -19,8 +19,10 @@ Make sure you have a valid Google cloud account somewhere if you want to use the
 Commands
 ~~~~~~~~
 
+.. code:: bash
+
     $ git clone 
-    $ virtualenv --prompt="(pytranslate)" --python=python3 ve
+    $ virtualenv --prompt="(pylocalizer)" --python=python3 ve
     $ pip install -r requirements.txt
 
 Usage
@@ -31,8 +33,12 @@ Inspecting a project
 
 This command will get the key for all languages in an Xcode project:
 
-    (pytranslate) $ python add_localized_string.py [path to Xcode project] --get MyKey 
+.. code:: bash
+
+    (pylocalizer) $ python pylocalizer/add_localized_string.py [path to Xcode project] --get MyKey 
 
 This command will translate the key for all languages in an Xcode project:
 
-    (pytranslate) $ python add_localized_string.py [path to Xcode project] --set MyKey="My value"
+.. code:: bash
+
+    (pylocalizer) $ python pylocalizer/add_localized_string.py [path to Xcode project] --set MyKey="My value"
