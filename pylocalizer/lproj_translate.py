@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
+
 import argparse
 import json
 import sys
@@ -13,7 +13,7 @@ from translator import Translator
 KEY_HELP = "An identifier for the word to be translated."
 TEXT_HELP = "The text to be tralsated."
 DEST_LANG_HELP = ("The ISO-693 two letter language code for all the"
-                " languages to translate to.")
+                  " languages to translate to.")
 SRC_LANG_HELP = ("The ISO-693 two letter language code for the "
                  " destination language of the word to translate.")
 FORMAT_HELP = ("The format of the outputted translation. Can be JSON or"
@@ -35,6 +35,7 @@ class TranslateCommand(object):
             self.text = cmd_args.text
             self.language = cmd_args.dest_lang
             self.format = cmd_args.format
+        # the kwargs come from JSON
         else:
             self.text = kwargs.get(constants.TEXT)
             self.key = kwargs.get(constants.KEY)
@@ -43,9 +44,7 @@ class TranslateCommand(object):
 
         self.format = self.format or 'JSON'
 
-        if (self.key is None or 
-            self.text is None or 
-            self.language is None):
+        if self.key is None or self.text is None or self.language is None:
             raise ValueError("Invalid data: %s" % self)
 
 
@@ -73,7 +72,7 @@ def parse_input_text(input_text, output_format):
 
 def build_parser():
     """Builds an argument parser with the appropriate flags.
-    
+
     returns:
         parser - a constructed ArgumentParser object.
     """
@@ -96,21 +95,21 @@ def build_parser():
 def valid_command_args(args):
     """Validates the provided command line arguments"""
     return (
-        args.text is not None and 
+        args.text is not None and
         args.key is not None and
         args.dest_lang is not None
     )
 
 
 def get_cmd_args():
-    """Builds the command arguments, either from STDIN or from the 
+    """Builds the command arguments, either from STDIN or from the
     provided command line arguments"""
     parser = build_parser()
     args = parser.parse_args()
 
     if valid_command_args(args):
         return [TranslateCommand(cmd_args=args)]
-    
+
     command = parse_input_text(''.join(sys.stdin.readlines()), args.format)
     commands = []
 
