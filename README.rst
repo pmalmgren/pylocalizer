@@ -23,6 +23,7 @@ Commands
 
     $ git clone 
     $ virtualenv --prompt="(pylocalizer)" --python=python3 ve
+    $ . ve/bin/activate
     $ pip install -r requirements.txt
 
 Usage
