@@ -21,7 +21,8 @@ Commands
 
 .. code:: bash
 
-    $ git clone 
+    $ git clone https://github.com/pmalmgren/pylocalizer.git
+    $ cd pylocalizer
     $ virtualenv --prompt="(pylocalizer)" --python=python3 ve
     $ . ve/bin/activate
     $ pip install -r requirements.txt
