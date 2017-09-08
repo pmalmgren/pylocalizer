@@ -35,6 +35,7 @@ class TranslateCommand(object):
             self.text = cmd_args.text
             self.language = cmd_args.dest_lang
             self.format = cmd_args.format
+        # the kwargs come from JSON
         else:
             self.text = kwargs.get(constants.TEXT)
             self.key = kwargs.get(constants.KEY)
