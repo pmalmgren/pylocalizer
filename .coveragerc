@@ -1,2 +1,5 @@
 [run]
-omit = ve/*
+omit = 
+    ve/*
+    .tox/
+    __pycache__/

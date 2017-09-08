@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
 
-import collections
 import glob
 import json
 import logging
 import os
 import shutil
 import sys
-from uuid import uuid4
 
 from googleapiclient import discovery
 
@@ -36,17 +33,19 @@ class InvalidXcodeProject(Exception):
 
 
 class Translator(object):
-    """The Translator class wraps all of the functionality from the Google Python API library.
+    """The Translator class wraps all of the functionality from the Google
+    Python API library.
 
     Attributes:
-        translate_service 
-
+        translate_service
     """
     def __init__(self):
         self.translate_service = discovery.build('translate', version='v2')
 
     def translate(self, text, target_lang):
-        req = self.translate_service.translations().list(q=text, target=target_lang, source='en')
+        req = self.translate_service.translations().list(
+            q=text, target=target_lang, source='en'
+        )
         texts = req.execute()
 
         return texts.get('translations')[0].get('translatedText')
@@ -63,21 +62,23 @@ class LanguageProject(object):
 
     @property
     def scratch_file_path(self):
-        return '{}/{}.{}'.format(self.scratch_dir, self.language_code, LOCALIZABLE_FILENAME)
+        return '{}/{}.{}'.format(
+            self.scratch_dir, self.language_code, LOCALIZABLE_FILENAME
+        )
 
     def commit(self):
         try:
             shutil.copy(self.scratch_file_path, self.path)
         except Exception as e:
             log.error('Error commiting %s', self.path, exc_info=True)
-    
+
     def get_translated_line(self, key, value):
         translated_value = self.translator.translate(value, self.language_code)
         return '"{}" = "{}";'.format(key, translated_value)
 
     def _get_key_value(self, line):
         key, value = line.split('=')
-        key = key.strip().replace('"','')
+        key = key.strip().replace('"', '')
         value = value.strip()[1:-2]
         return key, value
 
@@ -90,7 +91,7 @@ class LanguageProject(object):
             return 'Invalid line: {}'.format(line)
         except AssertionError:
             return None
-        
+
         return value.strip()[1:-2]
 
     def get_keys(self):
@@ -112,9 +113,9 @@ class LanguageProject(object):
                     value = self.parse_language_line(line, key)
                     if value is not None:
                         return value
-    
+
         return None
-    
+
     def set(self, key, value):
         written = False
         prev_start_char = None
@@ -139,23 +140,23 @@ class LanguageProject(object):
                         continue
 
                     line_to_write = line
-                    line_key = line_key.strip('\n').replace('"','')
+                    line_key = line_key.strip('\n').replace('"', '')
 
                     if line_key == key:
                         if not written:
                             line_to_write = translated_line
                             written = True
                     elif not replace_only and prev_start_char is not None:
-                        if key[0] >= prev_start_char and key[0] <= line_key[0]: 
+                        if key[0] >= prev_start_char and key[0] <= line_key[0]:
                             if not written:
                                 print(translated_line, file=scratch_file)
                                 written = True
-                    
+
                     prev_start_char = line_key[0]
                     print(line_to_write.strip('\n'), file=scratch_file)
-            
-            # This happens either when the file is blank to begin with, or when the key is 
-            # greater than all the others.
+
+            # This happens either when the file is blank to begin with,
+            # or when the key is greater than all the others.
             if not written:
                 print(translated_line, file=scratch_file)
 
@@ -177,7 +178,7 @@ class XcodeLocalizationProject(object):
         if path[-1] == '/':
             path = path[0:-1]
         path = str(path.replace('/{}'.format(LOCALIZABLE_FILENAME), ''))
-        return os.path.basename(path).replace(PROJECT_EXTENSION, '') 
+        return os.path.basename(path).replace(PROJECT_EXTENSION, '')
 
     def get_localization_projects(self, project_dir, scratch_dir=None):
         """Parses the Xcode project and returns all language folders.
@@ -185,21 +186,21 @@ class XcodeLocalizationProject(object):
         Currently these are stored in the directory Resources under the root
         project.
 
-        Ref: https://developer.apple.com/library/content/documentation/MacOSX/Conceptual/BPInternational/LocalizingYourApp/LocalizingYourApp.html
+        Ref: https://developer.apple.com/library/content/documentation/MacOSX/Conceptual/BPInternational/LocalizingYourApp/LocalizingYourApp.html  # NOQA
         """
         glob_str = '{}{}/*{}'.format(
             project_dir, RESOURCES_DIR, PROJECT_EXTENSION
         )
         matches = glob.glob(glob_str)
         projects = []
-        translator = Translator() 
+        translator = Translator()
 
         for match in matches:
             full_path = os.path.join(match, LOCALIZABLE_FILENAME)
             if os.path.exists(full_path):
                 lc = self.get_language_code(full_path)
                 lp = LanguageProject(
-                    path=full_path, language_code=lc, scratch_dir=scratch_dir, 
+                    path=full_path, language_code=lc, scratch_dir=scratch_dir,
                     translator=translator
                 )
                 projects.append(lp)
@@ -210,10 +211,12 @@ class XcodeLocalizationProject(object):
         return projects
 
     def diff_keys(self):
-        """Returns all of the keys that were not found in non-Base localization files.
+        """Returns all of the keys that were not found in non-Base localization
+        files.
 
-        The output will look like the following, assuming we have one missing key and one language:
-        
+        The output will look like the following, assuming we have one missing
+        key and one language:
+
         >>> xcode_project.diff_keys()
         [
             {
@@ -240,7 +243,6 @@ class XcodeLocalizationProject(object):
                     constants.LANGUAGE: lproj.language_code,
                     constants.FORMAT: constants.JSON,
                 }
-            
 
     def get_keys(self, language):
         """Fetches the keys from the specified language project"""
@@ -259,15 +261,14 @@ class XcodeLocalizationProject(object):
                 constants.TEXT: lproj.get(key),
                 constants.LANGUAGE: lproj.language_code,
                 constants.FORMAT: constants.JSON
-            } 
-        
+            }
+
     def set(self, key, value):
         """Sets the key for all language projects"""
         for lproj in self.lprojs:
             try:
-                translated_line = lproj.set(key, value)
+                lproj.set(key, value)
             except Exception as e:
-                translated_line = None
                 log.error('Error setting %s to %s', key, value, exc_info=True)
                 return
             else:

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
 
 import logging
 
@@ -11,14 +10,15 @@ log = logging.getLogger(__name__)
 
 
 class Translator(object):
-    """The Translator class wraps all of the functionality from the Google Python API library.
+    """The Translator class wraps all of the functionality from the Google
+    Python API library.
 
     Attributes:
-        translate_service 
+        translate_service
     """
     def __init__(self, translate_service=None):
         self.translate_service = (
-            translate_service or 
+            translate_service or
             discovery.build('translate', version='v2')
         )
 
@@ -27,7 +27,7 @@ class Translator(object):
 
         Arguments:
         text -- The text to translate
-        dest_lang -- The ISO-690 language code to translate to
+        dest_lang -- The ISO-639 language code to translate to
 
         Keyword Arguments:
         src_lang -- The language code to translate from, if None this

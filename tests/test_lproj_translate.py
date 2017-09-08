@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
+
 import json
 from unittest import mock
 
 import pytest
 import yaml
 
-from pytranslate import constants, lproj_translate
+from pylocalizer import constants, lproj_translate
 
 
 output_dict = {
@@ -42,9 +42,12 @@ output_test_data = [
 ]
 
 
-@pytest.mark.parametrize('key,text,language,output_format,expected', output_test_data)
+@pytest.mark.parametrize(
+    'key,text,language,output_format,expected', output_test_data
+)
 def test_output_dict(key, text, language, output_format, expected):
-    assert expected == lproj_translate.output_dict(key, text, language, output_format) 
+    output = lproj_translate.output_dict(key, text, language, output_format)
+    assert expected == output
 
 
 @pytest.mark.parametrize('bad_format', bad_formats)
@@ -58,7 +61,8 @@ def test_output_key_exception(bad_format):
     (yaml.dump(output_dict), 'YAML', output_dict),
 ])
 def test_parse_input_text(input_text, output_format, expected):
-    assert expected == lproj_translate.parse_input_text(input_text, output_format)
+    output = lproj_translate.parse_input_text(input_text, output_format)
+    assert expected == output
 
 
 @pytest.mark.parametrize('bad_format', bad_formats)
@@ -67,15 +71,14 @@ def test_parse_input_text_exception(bad_format):
         lproj_translate.parse_input_text(output_dict, bad_format)
 
 
-
 @pytest.fixture(scope='module',
                 params=[
-                    ('hi', 'greeting', 'jp'), 
+                    ('hi', 'greeting', 'jp'),
                     ('hi', 'greeting', 'es')])
 def valid_args(request):
     return mock.MagicMock(
-        text=request.param[0], 
-        key=request.param[1], 
+        text=request.param[0],
+        key=request.param[1],
         dest_lang=request.param[2],
         format='JSON'
     )
@@ -83,12 +86,12 @@ def valid_args(request):
 
 @pytest.fixture(scope='module',
                 params=[
-                    ('hi', None, 'es'), 
+                    ('hi', None, 'es'),
                     ('hi', 'greeting', None)])
 def invalid_args(request):
     return mock.MagicMock(
-        text=request.param[0], 
-        key=request.param[1], 
+        text=request.param[0],
+        key=request.param[1],
         dest_lang=request.param[2],
         format='JSON'
     )
@@ -115,7 +118,7 @@ def test_get_cmd_invalid_everything(invalid_args):
                 return_value='{}'
             )
             with pytest.raises(ValueError):
-                args = lproj_translate.get_cmd_args()
+                lproj_translate.get_cmd_args()
 
 
 def test_get_cmd_invalid_args(invalid_args):
@@ -128,19 +131,20 @@ def test_get_cmd_invalid_args(invalid_args):
                 return_value=json.dumps(output_dict)
             )
             commands = lproj_translate.get_cmd_args()
-            
+
             assert output_dict.get(constants.TEXT) == commands[0].text
             assert output_dict.get(constants.KEY) == commands[0].key
             assert output_dict.get(constants.LANGUAGE) == commands[0].language
-    
+
 
 def test_get_final_output(valid_args):
     translator_func = mock.MagicMock(return_value='oh hi')
 
-    output = lproj_translate.get_final_output(valid_args, translator_func)
+    lproj_translate.get_final_output(valid_args, translator_func)
 
     translator_func.assert_called_once()
-    assert translator_func.call_args == ((valid_args.text, valid_args.dest_lang),)
+    expected = ((valid_args.text, valid_args.dest_lang),)
+    assert translator_func.call_args == expected
 
 
 def test_get_cmd_args_multiple():
@@ -155,7 +159,7 @@ def test_get_cmd_args_multiple():
                 return_value=json.dumps([output_dict, output_dict2])
             )
             commands = lproj_translate.get_cmd_args()
-            
+
         assert len(commands) == 2
         for idx, expected in enumerate([output_dict, output_dict2]):
             assert expected.get(constants.TEXT) == commands[idx].text
@@ -163,13 +167,13 @@ def test_get_cmd_args_multiple():
             assert expected.get(constants.LANGUAGE) == commands[idx].language
 
 
-def test_get_final_output_multiple(): 
+def test_get_final_output_multiple():
     commands = [
-        lproj_translate.TranslateCommand(**output_dict), 
+        lproj_translate.TranslateCommand(**output_dict),
         lproj_translate.TranslateCommand(**output_dict2)
     ]
     translator_func = mock.MagicMock(return_value='word')
 
-    output = lproj_translate.get_final_output(commands, translator_func)
-    
+    lproj_translate.get_final_output(commands, translator_func)
+
     assert translator_func.call_count == 2
